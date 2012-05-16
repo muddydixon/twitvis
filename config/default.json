@@ -1,0 +1,11 @@
+{
+  "web": {
+    "port": 3020
+  }
+  , "tracks": ["love"]
+  , "database": {
+    "host": "localhost"
+    , "port": 27017
+    , "db": "twits"
+  }
+}
