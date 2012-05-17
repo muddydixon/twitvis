@@ -1,9 +1,13 @@
 {
-    "name": "application-name"
+    "name": "twitvis"
   , "version": "0.0.1"
   , "private": true
   , "dependencies": {
       "express": "2.5.8"
-    , "jade": ">= 0.0.1"
+    , "jade": ">= 0.26.0"
+    , "base64": ">=2.0.7"
+    , "config": ">=0.4.13"
+    , "monk": ">=0.1.8"
+    , "socket.io": ">0.9.6"
   }
 }

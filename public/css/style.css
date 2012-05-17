@@ -12,10 +12,14 @@ div#tweets {
 		width: 40%;
 		float: left;
 		padding: 15px;
+		overflow-x: hidden;
 }
 div#cloud {
 		width: 40%;
 		float: right;
+}
+div#cloud svg {
+		position: absolute;
 }
 div.tweet {
 }

@@ -2,7 +2,7 @@
   "web": {
     "port": 3020
   }
-  , "tracks": ["love"]
+  , "tracks": ["ニフティ", "nifty"]
   , "database": {
     "host": "localhost"
     , "port": 27017

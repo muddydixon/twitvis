@@ -16,6 +16,7 @@
     elm.prependTo('#tweets');
   });
   socket.on('summary', function(words){
+    $('#cloud svg').fadeOut("slow", function(){$(this).remove()});
     callChartDraw(words);
   });
 
@@ -25,10 +26,16 @@
   };
 
   var callChartDraw = function(words){
-    d3.layout.cloud().size([300, 300])
-      .words(words.map(function(d){
-        return {text: d, size: 10 + Math.random() * 90, color: getColor()};
-      })).rotate(function(d){
+    var queries = [];
+    for(var i in words){
+      if(words.hasOwnProperty(i)){
+        queries.push({text: i, size: words[i] * 3 + 20, color: getColor()});
+      }
+    }
+    queries = queries.sort(function(a, b){return b.size - a.size; }).slice(0, 50);
+
+    d3.layout.cloud().size([500, 500])
+      .words(queries).rotate(function(d){
         return ~~(Math.random() * 2) * 90 * Math.random();
       }).fontSize(function(d){
         return d.size;
@@ -38,7 +45,7 @@
   };
   
   var draw = function(words){
-    d3.select('div#cloud').append('svg').attr('width', 500).attr('height', 500).append('g').attr('transform', 'translate(300, 300)')
+    d3.select('div#cloud').append('svg').attr('width', 800).attr('height', 800).append('g').attr('transform', 'translate(200, 350)')
       .selectAll('text').data(words)
       .enter().append('text')
       .style('font-size', function(d){
@@ -54,5 +61,4 @@
     });
   };
   
-  callChartDraw('As word placement can be quite slow for more than a few hundred words, the layout algorithm can be run asynchronously, with a configurable time step size. This makes it possible to animate words as they are placed without stuttering. It is recommended to always use a time step even without animations as it prevents the browser’s event loop from blocking while placing the words'.split(' '));
 }());
