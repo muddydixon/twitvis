@@ -1,5 +1,8 @@
-(function(){
+$(function(){
   var socket = io.connect('http://localhost/');
+
+  var width = $('div#cloud').width()
+  , height = 0 | $('div#cloud').height();
 
   var TweetTemplate = $([
       '<div class="tweet">'
@@ -25,9 +28,10 @@
   };
 
   var callChartDraw = function(words){
-    d3.layout.cloud().size([300, 300])
+    d3.layout.cloud().size([width, height])
       .words(words.map(function(d){
         return {text: d, size: 10 + Math.random() * 90, color: getColor()};
+//         return {text: d.text, size: d.size, color: getColor()};
       })).rotate(function(d){
         return ~~(Math.random() * 2) * 90 * Math.random();
       }).fontSize(function(d){
@@ -38,7 +42,7 @@
   };
   
   var draw = function(words){
-    d3.select('div#cloud').append('svg').attr('width', 500).attr('height', 500).append('g').attr('transform', 'translate(300, 300)')
+    d3.select('div#cloud').append('svg').attr('width', width).attr('height', height).append('g').attr('transform', 'translate('+(0|width / 2)+', '+(0|height / 2)+')')
       .selectAll('text').data(words)
       .enter().append('text')
       .style('font-size', function(d){
@@ -53,6 +57,23 @@
       return d.text;
     });
   };
-  
+
+  var uniqnize = function(words){
+    var dics = {};
+    $(words).each(function(){
+      if(!dics.hasOwnProperty(''+this)){
+        dics[''+this] = 0;
+      }
+      dics[''+this] ++;
+    });
+
+    var queries = [];
+    for(var word in dics){
+      queries.push({text: word, size: dics[word]});
+    }
+    return queries;
+  };
+//   callChartDraw(uniqnize('As word placement can be quite slow for more than a few hundred words, the layout algorithm can be run asynchronously, with a configurable time step size. This makes it possible to animate words as they are placed without stuttering. It is recommended to always use a time step even without animations as it prevents the browser’s event loop from blocking while placing the words'.split(' ')));
   callChartDraw('As word placement can be quite slow for more than a few hundred words, the layout algorithm can be run asynchronously, with a configurable time step size. This makes it possible to animate words as they are placed without stuttering. It is recommended to always use a time step even without animations as it prevents the browser’s event loop from blocking while placing the words'.split(' '));
-}());
+
+});

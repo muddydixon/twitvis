@@ -9,15 +9,22 @@ a {
 }
 
 div#tweets {
-		width: 40%;
-		float: left;
-		padding: 15px;
+		width: 60%;
+		padding-left: 15px;
 }
 div#cloud {
-		width: 40%;
-		float: right;
+		position: fixed;
+		height: 100%;
+		width: 50%;
+		right: 0px;
+		top: 0px;
+
 }
 div.tweet {
+		width: 50px;
+		height: 50px;
+		border: 1px solid #CCC;
+		background: #CCC;
 }
 div.tweet p {
 		font-size: 24pt;
