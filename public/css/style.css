@@ -11,6 +11,10 @@ a {
 div#tweets {
 		width: 60%;
 		padding-left: 15px;
+		width: 40%;
+		float: left;
+		padding: 15px;
+		overflow-x: hidden;
 }
 div#cloud {
 		position: fixed;
@@ -19,6 +23,9 @@ div#cloud {
 		right: 0px;
 		top: 0px;
 
+}
+div#cloud svg {
+		position: absolute;
 }
 div.tweet {
 		width: 50px;

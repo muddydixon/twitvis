@@ -19,6 +19,7 @@ $(function(){
     elm.prependTo('#tweets');
   });
   socket.on('summary', function(words){
+    $('#cloud svg').fadeOut("slow", function(){$(this).remove()});
     callChartDraw(words);
   });
 
@@ -28,11 +29,17 @@ $(function(){
   };
 
   var callChartDraw = function(words){
-    d3.layout.cloud().size([width, height])
-      .words(words.map(function(d){
-        return {text: d, size: 10 + Math.random() * 90, color: getColor()};
-//         return {text: d.text, size: d.size, color: getColor()};
-      })).rotate(function(d){
+    var queries = [];
+    for(var i in words){
+      if(words.hasOwnProperty(i)){
+        queries.push({text: words[i], size: words[i] * 3 + 20 || 0|Math.random() * 50 + 10, color: getColor()});
+      }
+    }
+    queries = queries.sort(function(a, b){return b.size - a.size; }).slice(0, 50);
+    console.log(queries);
+
+    d3.layout.cloud().size([500, 500])
+      .words(queries).rotate(function(d){
         return ~~(Math.random() * 2) * 90 * Math.random();
       }).fontSize(function(d){
         return d.size;
@@ -58,22 +65,6 @@ $(function(){
     });
   };
 
-  var uniqnize = function(words){
-    var dics = {};
-    $(words).each(function(){
-      if(!dics.hasOwnProperty(''+this)){
-        dics[''+this] = 0;
-      }
-      dics[''+this] ++;
-    });
-
-    var queries = [];
-    for(var word in dics){
-      queries.push({text: word, size: dics[word]});
-    }
-    return queries;
-  };
-//   callChartDraw(uniqnize('As word placement can be quite slow for more than a few hundred words, the layout algorithm can be run asynchronously, with a configurable time step size. This makes it possible to animate words as they are placed without stuttering. It is recommended to always use a time step even without animations as it prevents the browser’s event loop from blocking while placing the words'.split(' ')));
   callChartDraw('As word placement can be quite slow for more than a few hundred words, the layout algorithm can be run asynchronously, with a configurable time step size. This makes it possible to animate words as they are placed without stuttering. It is recommended to always use a time step even without animations as it prevents the browser’s event loop from blocking while placing the words'.split(' '));
 
 });

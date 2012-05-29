@@ -1,5 +1,5 @@
 (function() {
-  var Tweets, app, base64, calcAndEmit, config, db, express, https, io, method, qs, route, routes;
+  var MeCab, Tweets, app, base64, calcAndEmit, config, db, express, getProp, https, io, m, method, normalize, qs, route, routes, stopWords;
 
   express = require('express');
 
@@ -18,6 +18,21 @@
   db = require('monk')(config.database.host + ':' + config.database.port + '/' + config.database.db);
 
   Tweets = db.get('tweets');
+
+  MeCab = require('./mecab');
+
+  stopWords = (function() {
+    var obj, sw, sws, _i, _len;
+    sws = 'this that down up co jp nifty http https a of the by till until must shoud can may could will would i my me mine you your yours he his him she her hers it is do rt for gt = =" gt at and or '.split(/\s/);
+    obj = {};
+    for (_i = 0, _len = sws.length; _i < _len; _i++) {
+      sw = sws[_i];
+      obj[sw] = true;
+    }
+    return obj;
+  })();
+
+  m = new MeCab.Tagger();
 
   app.configure(function() {
     app.set('views', __dirname + '/views');
@@ -103,11 +118,42 @@
 
   console.log('Express server listening on port %d in %s mode', app.address().port, app.settings.env);
 
-//   app.startStream(null);
+  app.startStream(null);
+
+  normalize = function(w) {
+    return w = w.toLowerCase();
+  };
+
+  getProp = function(props) {
+    return props.split(',');
+  };
 
   calcAndEmit = function() {
-    Tweets.find({}, function(err, tweeets) {
-      return console.log(tweeets);
+    Tweets.find({}, {
+      limit: 100
+    }, function(err, tweets) {
+      var props, tweet, word, words, ws, _i, _len;
+      words = {};
+      for (_i = 0, _len = tweets.length; _i < _len; _i++) {
+        tweet = tweets[_i];
+        ws = m.parse(tweet.text).split(/\s/);
+        while (ws) {
+          word = ws.shift();
+          props = ws.shift();
+          if (props == null) continue;
+          props = getProp(props);
+          if (!(props[0] === '名刺' || props[0] === '動詞' || props[0] === '形容詞')) {
+            continue;
+          }
+          word = normalize(word);
+          if (word.length < 2 || word.match(/^\d+$/) || word.match(/^[:\/\\\$\@\.\_;]+$/) || stopWords[word]) {
+            continue;
+          }
+          if (words[word] == null) words[word] = 0;
+          words[word] += word.match(/^[a-zA-Z0-9]+$/) ? 1 : 5;
+        }
+      }
+      io.sockets.emit('summary', words);
     });
   };
 

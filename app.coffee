@@ -7,6 +7,17 @@ app = module.exports = express.createServer()
 io = require('socket.io').listen(app)
 db = require('monk')(config.database.host + ':' + config.database.port + '/' + config.database.db)
 Tweets = db.get('tweets')
+MeCab = require './mecab'
+
+stopWords = (() ->
+  sws = 'this that down up co jp nifty http https a of the by till until must shoud can may could will would i my me mine you your yours he his him she her hers it is do rt for gt = =" gt at and or '.split(/\s/)
+  obj = {}
+  for sw in sws
+    obj[sw] = true
+  return obj
+  )()
+
+m = new MeCab.Tagger()
 
 app.configure ->
   app.set 'views', __dirname + '/views'
@@ -71,10 +82,34 @@ console.log 'Express server listening on port %d in %s mode', app.address().port
 
 app.startStream null
 
+normalize = (w) ->
+  w = w.toLowerCase()
+
+getProp = (props) ->
+  props.split(',')
+
 calcAndEmit = () ->
-  Tweets.find({}, {}, {limit: 100}, (tweeets) ->
-    console.log (tweeets)
+  Tweets.find({}, {limit: 100}, (err, tweets) ->
+    words = {}
+    for tweet in tweets
+      ws = m.parse(tweet.text).split(/\s/)
+
+      while ws.length > 0
+        word = ws.shift()
+        props = ws.shift()
+        continue unless props?
+
+        props = getProp(props)
+        continue unless props[0] is '名詞' or props[0] is '動詞' or props[0] is '形容詞'
+
+        word = normalize(word)
+        continue if word.length < 2 or word.match(/^\d+$/) or word.match(/^[:\/\\\$\@\.\_;]+$/) or stopWords[word]
+        words[word] = 0 unless words[word]?
+        words[word] += if word.match(/^[a-zA-Z0-9]+$/) then 1 else 5
+
+    io.sockets.emit 'summary', words
+    return
     )
   return
 
-setInterval( calcAndEmit, 1000)
+setInterval( calcAndEmit, 3000)
